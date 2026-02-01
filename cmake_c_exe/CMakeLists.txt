@@ -14,6 +14,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Make root folder the project folder for #FILE macro
 set(CMAKE_C_FLAGS "-ffile-prefix-map=${CMAKE_CURRENT_LIST_DIR}/src/=")
 
+{% if requires is defined -%}
+{% for require in requires -%}
+find_package({{as_name(require)}} CONFIG REQUIRED)
+{% endfor %}
+{%- endif %}
+
 include_directories(BEFORE conf/ )
 include_directories(BEFORE src/ )
 include_directories(BEFORE deps/ )
@@ -25,8 +31,12 @@ add_executable(test-{{name}} test/test-main.c)
 # target_link_libraries(test-{{name}} ...)
 
 add_executable(${PROJECT_NAME} src/main.c)
-# target_link_libraries(${PROJECT_NAME} ...)
-install(TARGETS mypkg DESTINATION ${CMAKE_INSTALL_PREFIX}
+{% if requires is defined -%}
+{% for require in requires -%}
+target_link_libraries({{name}} PRIVATE {{as_name(require)}}::{{as_name(require)}})
+{% endfor %}
+{%- endif %}
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

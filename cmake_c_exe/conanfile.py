@@ -1,15 +1,12 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-from conan.tools.files.files import load
 import re
 
+
 def get_version():
-    try:
-        content = load("CMakeLists.txt")
-        version = re.search(b"project\(.+ VERSION (.*)\)", content).group(1)
-        return version.strip()
-    except Exception as e:
-        return None
+    content = open("CMakeLists.txt", "r").read()
+    version = re.search("project\(.+ VERSION (.*)\)", content).group(1)
+    return version.strip()
 
 class {{name | capitalize}}Recipe(ConanFile):
     name = "{{name}}"
@@ -46,3 +43,18 @@ class {{name | capitalize}}Recipe(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install()
+
+    {% if requires is defined -%}
+    def requirements(self):
+        {% for require in requires -%}
+        self.requires("{{ require }}")
+        {% endfor %}
+    {%- endif %}
+
+    {% if tool_requires is defined -%}
+    def build_requirements(self):
+        {% for require in tool_requires -%}
+        self.tool_requires("{{ require }}")
+        {% endfor %}
+    {%- endif %}
+
