@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 project({{name}} LANGUAGES C VERSION {{version}})
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/conf/version.h.in
-    ${CMAKE_SOURCE_DIR}/conf/version.h
+    conf/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/conf/version.h
 )
 
 set(CMAKE_C_STANDARD 11)
@@ -20,7 +20,7 @@ find_package({{as_name(require)}} CONFIG REQUIRED)
 {% endfor %}
 {%- endif %}
 
-include_directories(BEFORE conf/ )
+include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/conf/ )
 include_directories(BEFORE src/ )
 include_directories(BEFORE deps/ )
 

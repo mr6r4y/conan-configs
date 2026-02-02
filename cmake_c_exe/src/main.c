@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	argp_parse(&argp, argc, argv, 0, 0, &params);
 
 	if(params.version){
-		printf("Version: %s", VERSION);
+		printf("Version: %s\n", VERSION);
 	}
 
 	return EXIT_SUCCESS;
