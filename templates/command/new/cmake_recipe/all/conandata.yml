@@ -1,0 +1,5 @@
+sources:
+  "{{version}}":
+    url: "{{url}}"
+    commit: null
+

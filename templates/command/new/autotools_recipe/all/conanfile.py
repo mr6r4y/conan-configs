@@ -1,0 +1,105 @@
+import os
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.layout import basic_layout
+from conan.tools.files import (
+    copy,
+    rm,
+    rmdir,
+)
+from conan.errors import ConanException
+from conan.tools.gnu import Autotools, AutotoolsDeps, AutotoolsToolchain, PkgConfigDeps
+
+
+class {{package_name}}Connan(ConanFile):
+    name = "{{name}}"
+
+    license = "<Put the package license here>"
+    author = "<Put your name here> <And your email here>"
+    url = "<Package recipe repository url here, for issues about the package>"
+    description = "<Description of mypkg package here>"
+    topics = ("<Put some tag here>", "<here>", "<and here>")
+
+    package_type = "library"
+    settings = "os", "arch", "compiler", "build_type"
+    languages = "C"
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
+    }
+    default_options = {
+        "shared": True,
+        "fPIC": True,
+    }
+
+    def layout(self):
+        basic_layout(self, src_folder="src")
+
+    def configure(self):
+        if self.options.shared:
+            self.options.rm_safe("fPIC")
+        self.settings.rm_safe("compiler.cppstd")
+        self.settings.rm_safe("compiler.libcxx")
+
+    def source(self):
+        if os.path.exists(os.path.abspath(".git")):
+            self.output.wirteln("Repository is cloned. Skipping ..")
+            return
+        git = Git(self)
+        url = self.conan_data["sources"][self.version].get("url")
+        commit = self.conan_data["sources"][self.version].get("commit")
+        if url is None:
+            raise ConanException(
+                "Can't find URL of repo from configuration file for %s" % self.version
+            )
+        git.clone(url=url, target=".")
+        if commit is not None and self.version != "master":
+            git.checkout(commit=commit)
+
+    def generate(self):
+        tc = AutotoolsToolchain(self)
+        tc.generate()
+        tc = PkgConfigDeps(self)
+        tc.generate()
+        deps = AutotoolsDeps(self)
+        deps.generate()
+
+    def build(self):
+        autotools = Autotools(self)
+        autotools.autoreconf()
+        autotools.configure()
+        autotools.make()
+
+    def package(self):
+        copy(
+            self,
+            "COPYING",
+            self.source_folder,
+            os.path.join(self.package_folder, "licenses"),
+        )
+        autotools = Autotools(self)
+        autotools.install()
+
+        # Some files extensions and folders are not allowed. Please, read the FAQs to get informed.
+        rm(self, "*.la", os.path.join(self.package_folder, "lib"))
+        # Consider disabling these at first to verify that the package_info() output matches the info exported by the project.
+        rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
+        rmdir(self, os.path.join(self.package_folder, "share"))
+
+    def package_info(self):
+        self.cpp_info.libs = ["{{as_name(name)}}",]
+
+    {% if requires is defined -%}
+    def requirements(self):
+        {% for require in requires -%}
+        self.requires("{{ require }}")
+        {% endfor %}
+    {%- endif %}
+
+    {% if tool_requires is defined -%}
+    def build_requirements(self):
+        {% for require in tool_requires -%}
+        self.tool_requires("{{ require }}")
+        {% endfor %}
+    {%- endif %}
+
