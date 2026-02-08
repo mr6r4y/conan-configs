@@ -14,6 +14,27 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Make root folder the project folder for #FILE macro
 add_compile_options("-ffile-prefix-map=${CMAKE_CURRENT_LIST_DIR}/src/=")
 
+# Additional warnings
+# https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
+add_compile_options(
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wcast-qual
+    -Wdouble-promotion
+    -Wshadow
+    -Wstrict-prototypes
+    -Wpointer-arith
+    -Wno-unused-function
+    -Wformat=2
+    -Wformat-overflow
+    -Wformat-truncation
+    -Wundef
+    -fno-common
+    -Wconversion
+    -Wpadded
+)
+
 {% if requires is defined -%}
 {% for require in requires -%}
 find_package({{as_name(require)}} CONFIG REQUIRED)
