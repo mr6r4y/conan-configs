@@ -1,0 +1,15 @@
+include(default)
+
+[settings]
+# Just an example, you need to use your real settings
+os=Android
+os.api_level=35
+arch=armv8
+compiler=clang
+compiler.version=19
+compiler.libcxx=c++_shared
+compiler.cppstd=17
+
+[conf]
+# Use your path here
+tools.android:ndk_path={{ os.path.join(os.getenv("ANDROID_HOME"), "ndk/28.0.12916984") }}
