@@ -12,7 +12,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Make root folder the project folder for #FILE macro
-add_compile_options("-ffile-prefix-map=${CMAKE_CURRENT_LIST_DIR}/src/=")
+add_compile_options($<$<CONFIG:RELEASE>:-ffile-prefix-map=${CMAKE_CURRENT_LIST_DIR}/src/=>)
 
 # Additional warnings
 # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
