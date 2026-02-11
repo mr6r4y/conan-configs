@@ -4,8 +4,12 @@ build_type=Debug
 compiler=clang
 compiler.cppstd=17
 compiler.libcxx=libc++
-compiler.version=21
+compiler.version=19
 os=Linux
 
 [conf]
 user.myconf.build:cflags=["-fsanitize=address", "-fsanitize=undefined", "-fno-omit-frame-pointer"]
+
+[buildenv]
+CC=clang-19
+CXX=clang++-19
