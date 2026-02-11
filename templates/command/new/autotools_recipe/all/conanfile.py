@@ -11,7 +11,7 @@ from conan.errors import ConanException
 from conan.tools.gnu import Autotools, AutotoolsDeps, AutotoolsToolchain, PkgConfigDeps
 
 
-class {{package_name | capitalize}}Connan(ConanFile):
+class {{package_name.replace('_', '') | capitalize}}Connan(ConanFile):
     name = "{{name}}"
 
     license = "<Put the package license here>"
@@ -28,7 +28,7 @@ class {{package_name | capitalize}}Connan(ConanFile):
         "fPIC": [True, False],
     }
     default_options = {
-        "shared": True,
+        "shared": False,
         "fPIC": True,
     }
 
@@ -87,7 +87,11 @@ class {{package_name | capitalize}}Connan(ConanFile):
         rmdir(self, os.path.join(self.package_folder, "share"))
 
     def package_info(self):
-        self.cpp_info.libs = ["{{as_name(name)}}",]
+        self.cpp_info.libs = ["{{name.replace('lib', '')}}",]
+
+        self.cpp_info.set_property("cmake_file_name", "{{name.replace('lib', '')}}")
+        self.cpp_info.set_property("cmake_target_name", "{{name.replace('lib', '')}}::{{name.replace('lib', '')}}")
+        self.cpp_info.set_property("pkg_config_name", "lib{{name.replace('lib', '')}}")
 
     {% if requires is defined -%}
     def requirements(self):
