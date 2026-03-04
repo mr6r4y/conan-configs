@@ -10,6 +10,11 @@ tasks:
     status:
       - test -d venv/
 
+  ctags:
+    deps: [venv]
+    cmds:
+      - source venv/bin/activate && ./ctags-gen.sh
+
   conan-profile:
     deps: [venv]
     cmds:
