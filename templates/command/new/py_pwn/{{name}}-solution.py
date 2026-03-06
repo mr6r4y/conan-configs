@@ -29,6 +29,7 @@ def main():
     io = start()
 
     # =============================================================================
+    embed(globals(), locals(), vi_mode=False)
 
     # TO-DO: Solution here
 
