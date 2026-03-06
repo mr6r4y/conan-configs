@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from ptpython.repl import embed
 from pwn import *
 
 
