@@ -1,0 +1,29 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  patch-ld:
+    cmds:
+      - patchelf --set-interpreter ./ld-linux-x86-64.so.2 ./{{name}}
+
+  run:
+    cmds:
+      - LD_LIBRARY_PATH=./ ./{{name}}
+
+  run-remote:
+    cmds:
+      - nc {{host}} {{port}}
+
+  dbg:
+    cmds:
+      - source pwn && ./{{name}}-solution.py GDB
+
+  local:
+    cmds:
+      - source pwn && ./{{name}}-solution.py
+
+  remote:
+    cmds:
+      - source pwn && ./{{name}}-solution.py REMOTE
+
