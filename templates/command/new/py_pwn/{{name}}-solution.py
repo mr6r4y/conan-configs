@@ -13,12 +13,24 @@ continue
 
 
 def start():
+{% if host is defined and port is defined -%}
+    if args.REMOTE:
+        return remote("{{host}}", {{port}})
+    elif args.GDB:
+{%- else %}
     if args.GDB:
+{%- endif %}
         return gdb.debug(
-            elf.path, gdb_args=["-ix", "~/gdbinit/pwndbg.gdbinit"], gdbscript=gs
+            elf.path,
+            gdb_args=["-ix", "~/gdbinit/pwndbg.gdbinit"],
+            gdbscript=gs,
+            env={"LD_LIBRARY_PATH": "./"},
         )
     else:
-        return process(elf.path)
+        return process(
+            elf.path,
+            env={"LD_LIBRARY_PATH": "./"},
+        )
 
 
 def delta(x, y):

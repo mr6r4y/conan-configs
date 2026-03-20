@@ -11,9 +11,11 @@ tasks:
     cmds:
       - LD_LIBRARY_PATH=./ ./{{name}}
 
+{% if host is defined and port is defined -%}
   run-remote:
     cmds:
       - nc {{host}} {{port}}
+{%- endif %}
 
   dbg:
     cmds:
