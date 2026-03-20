@@ -1,0 +1,94 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  PACKAGE: "{{package}}"
+  PROCESS: "{{process}}"
+  PID: 
+    sh: "echo $(source re && frida-ps -U | grep '{{.PROCESS}}' | cut -d' ' -f1)"
+  FRIDA_SCRIPTS: "/{{.HOME}}/{{frida-scripts}}/src/frida_scripts/js/"
+  FRIDABITES: "/{{.HOME}}/{{fridabites}}"
+  REPOS: "/{{repos}}"
+
+tasks:
+  start-frida-server:
+    cmds:
+      - adb shell 'su -c "/data/local/tmp/frida-server -D"' 2>&1 1> /dev/null &
+      - true
+
+  start-lldb-server:
+    cmds:
+      - adb shell -x 'su -c "/data/local/tmp/start-server.sh"' 2>&1 1> /dev/null &
+      - true
+
+  echo-pids:
+    cmds:
+      - echo {{.PID}}
+
+  fds:
+    cmds:
+      - adb shell su -c 'ls -al /proc/$(pidof {{.PACKAGE}})/fd/'
+
+  trace:
+    cmds:
+      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/simple-trace/{{.T}}.js -f {{.PACKAGE}}
+
+  trace2:
+    cmds:
+      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/simple-trace/{{.T}}.js -f {{.PACKAGE}} --eternalize
+
+  fi:
+    cmds:
+      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -f {{.PACKAGE}} --auto-perform
+
+  fl:
+    cmds:
+      - source re && my-frida --no-auto-reload -U -f {{.PACKAGE}} -l {{.FRIDABITES}}/simple-trace/{{.T}}.js
+
+  fr:
+    cmds:
+      - source re && my-frida --no-auto-reload -U -f {{.PACKAGE}} -l {{.T}}
+
+  features:
+    cmds:
+      - adb shell pm list features
+
+  ps:
+    cmds:
+      - source re && frida-ps -U
+
+  ps2:
+    cmds:
+      - adb shell 'su -c "ps -A"'
+
+  list-packages:
+    cmds:
+      - adb shell pm list packages
+
+  package-path:
+    cmds:
+      - adb shell pm path {{.PACKAGE}}
+
+  download-apks:
+    dir: apks/
+    cmds:
+      - for pkg in $(adb shell pm path {{.PACKAGE}}); do adb pull $(echo $pkg | cut -c 9-); done
+
+  decompile:
+    cmds:
+      - source re && mass-java-decompile -s apks/ -d java/
+
+  lsof:
+    cmds:
+      - adb shell 'su -c "lsof -p $(pidof {{.PACKAGE}})"'
+
+  maps:
+    cmds:
+      - adb shell 'su -c "cat /proc/{{.PID}}/maps"'
+
+  dump-safe-so:
+    dir: "/{{.REPOS}}/github.com/SeeFlowerX/frida_dump"
+    cmds:
+      - source re && python3 -m frida_dump.dump_so -n {{.PACKAGE}} --spawn {{.T}}
+
