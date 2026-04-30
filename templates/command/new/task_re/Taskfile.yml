@@ -6,11 +6,12 @@ vars:
   PACKAGE: "{{package}}"
   PROCESS: "{{process}}"
   PID: 
-    sh: "echo $(source re && frida-ps -U | grep '{{.PROCESS}}' | cut -d' ' -f1)"
-  FRIDA_SCRIPTS: "/{{.HOME}}/{{frida-scripts}}/src/frida_scripts/js/"
-  FRIDABITES: "/{{.HOME}}/{{fridabites}}"
+    sh: "echo $(source re && frida-ps -U | grep '{{'{{.PROCESS}}'}}' | cut -d' ' -f1)"
+  FRIDA_SCRIPTS: "/{{'{{.HOME}}'}}/{{frida_scripts}}/src/frida_scripts/js/"
+  FRIDABITES: "/{{'{{.HOME}}'}}/{{fridabites}}"
   REPOS: "/{{repos}}"
 
+{% raw %}
 tasks:
   start-frida-server:
     cmds:
@@ -91,4 +92,4 @@ tasks:
     dir: "/{{.REPOS}}/github.com/SeeFlowerX/frida_dump"
     cmds:
       - source re && python3 -m frida_dump.dump_so -n {{.PACKAGE}} --spawn {{.T}}
-
+{% endraw %}

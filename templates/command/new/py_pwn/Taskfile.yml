@@ -2,6 +2,10 @@
 
 version: '3'
 
+vars:
+  PWN: "~/venvs/pwn/bin/activate"
+  NAME: {{name}}
+
 tasks:
   patch-ld:
     cmds:
@@ -17,15 +21,16 @@ tasks:
       - nc {{host}} {{port}}
 {%- endif %}
 
+{% raw %}
   dbg:
     cmds:
-      - source pwn && ./{{name}}-solution.py GDB
+      - source {{.PWN}} && ./{{.NAME}}-solution.py GDB
 
   local:
     cmds:
-      - source pwn && ./{{name}}-solution.py
+      - source {{.PWN}} && ./{{.NAME}}-solution.py
 
   remote:
     cmds:
-      - source pwn && ./{{name}}-solution.py REMOTE
-
+      - source {{.PWN}} && ./{{.NAME}}-solution.py REMOTE
+{% endraw %}
