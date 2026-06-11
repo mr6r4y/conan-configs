@@ -4,24 +4,22 @@ version: '3'
 
 vars:
   PACKAGE: "{{package}}"
-  PROCESS: "{{process}}"
-  PID: 
-    sh: "echo $(source re && frida-ps -U | grep '{{'{{.PROCESS}}'}}' | cut -d' ' -f1)"
-  FRIDA_SCRIPTS: "/{{'{{.HOME}}'}}/{{frida_scripts}}/src/frida_scripts/js/"
-  FRIDABITES: "/{{'{{.HOME}}'}}/{{fridabites}}"
-  REPOS: "/{{repos}}"
-
 {% raw %}
-tasks:
-  start-frida-server:
-    cmds:
-      - adb shell 'su -c "/data/local/tmp/frida-server -D"' 2>&1 1> /dev/null &
-      - true
+  PID: 
+    sh: "echo $(adb shell pidof {{.PACKAGE}})"
+  FRIDA_SCRIPTS: "/{{.HOME}}/workspace/frida-scripts/src/frida_scripts/js/"
+  LLDBBITES: "/{{.HOME}}/l"
+  FRIDABITES: "/{{.HOME}}/f"
+  ITRACE_AGENT: "/{{.HOME}}/venvs/re/lib/python3.11/site-packages/frida_tools/itracer_agent.js"
 
-  start-lldb-server:
+tasks:
+  status:
     cmds:
-      - adb shell -x 'su -c "/data/local/tmp/start-server.sh"' 2>&1 1> /dev/null &
-      - true
+      - adb shell su -c 'cat /proc/$(pidof {{.PACKAGE}})/status'
+
+  wchan:
+    cmds:
+      - adb shell su -c 'cat /proc/$(pidof {{.PACKAGE}})/wchan'
 
   echo-pids:
     cmds:
@@ -33,23 +31,40 @@ tasks:
 
   trace:
     cmds:
-      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/simple-trace/{{.T}}.js -f {{.PACKAGE}}
+      - source re && my-frida-ai --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/trace/{{.T}}.js -f {{.PACKAGE}}
 
-  trace2:
+  dbg:
     cmds:
-      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/simple-trace/{{.T}}.js -f {{.PACKAGE}} --eternalize
+      - "/{{.LLDBBITES}}/lldb-ndk-app-attach.sh {{.PACKAGE}} -s {{.LLDBBITES}}/bitescripts/base.lldb"
+
+  trace-attach:
+    cmds:
+      - source re && my-frida-ai --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/trace/{{.T}}.js -p {{.PID}}
+
+
+  itrace:
+    cmds:
+      - source re && my-frida --runtime v8 --no-auto-reload -U  -l {{.ITRACE_AGENT}} -l {{.FRIDA_SCRIPTS}}/trace.js -l {{.FRIDABITES}}/traca/{{.T}}.js -f {{.PACKAGE}}
 
   fi:
     cmds:
-      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -f {{.PACKAGE}} --auto-perform
+      - source re && my-frida --no-auto-reload -U -l {{.FRIDA_SCRIPTS}}/trace.js -f {{.PACKAGE}}
 
   fl:
     cmds:
-      - source re && my-frida --no-auto-reload -U -f {{.PACKAGE}} -l {{.FRIDABITES}}/simple-trace/{{.T}}.js
+      - source re && my-frida --no-auto-reload -U -f {{.PACKAGE}} -l {{.FRIDABITES}}/trace/{{.T}}.js
 
   fr:
     cmds:
       - source re && my-frida --no-auto-reload -U -f {{.PACKAGE}} -l {{.T}}
+
+  fr-spawn:
+    cmds:
+      - source re && my-frida --no-auto-reload -U -f {{.PACKAGE}}
+
+  fr-attach:
+    cmds:
+      - source re && my-frida-ai --no-auto-reload -U -p {{.PID}}
 
   features:
     cmds:
@@ -82,14 +97,9 @@ tasks:
 
   lsof:
     cmds:
-      - adb shell 'su -c "lsof -p $(pidof {{.PACKAGE}})"'
+      - adb shell 'su -c "lsof -p {{.PID}}"'
 
   maps:
     cmds:
       - adb shell 'su -c "cat /proc/{{.PID}}/maps"'
-
-  dump-safe-so:
-    dir: "/{{.REPOS}}/github.com/SeeFlowerX/frida_dump"
-    cmds:
-      - source re && python3 -m frida_dump.dump_so -n {{.PACKAGE}} --spawn {{.T}}
 {% endraw %}
