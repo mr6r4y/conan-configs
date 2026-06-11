@@ -2,6 +2,8 @@
 
 version: '3'
 
+dotenv: ['task.env']
+
 vars:
   PACKAGE: "{{package}}"
 {% raw %}
