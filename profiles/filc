@@ -1,0 +1,28 @@
+{% set filc_home = os.getenv("FILC_HOME", "/opt/fil-c") %}
+{% set filc_bin = os.path.join(filc_home, "build", "bin") %}
+{% set filcc = os.path.join(filc_bin, "filcc") %}
+{% set filxx = os.path.join(filc_bin, "fil++") %}
+{% set clang_version = subprocess.check_output([filcc, "-dumpversion"], text=True).strip().split(".")[0] %}
+{% set filc_version = subprocess.check_output([filcc, "--version"], text=True).split("Fil-C ", 1)[1].split()[0] %}
+{% set machine = platform.machine().lower() %}
+{% set arch = {"x86_64": "x86_64", "amd64": "x86_64", "aarch64": "armv8", "arm64": "armv8"}.get(machine, machine) %}
+
+[settings]
+os=Linux
+arch={{ arch }}
+build_type=Release
+compiler=clang
+compiler.version={{ clang_version }}
+compiler.libcxx=libc++
+compiler.cstd=17
+compiler.cppstd=20
+
+[conf]
+tools.build:compiler_executables={"c": "{{ filcc }}", "cpp": "{{ filxx }}"}
+# Fil-C objects are not ABI-compatible with ordinary Clang objects.
+user.filc:version=v{{ filc_version }}
+tools.info.package_id:confs=["user.filc:version"]
+
+[buildenv]
+CC={{ filcc }}
+CXX={{ filxx }}
