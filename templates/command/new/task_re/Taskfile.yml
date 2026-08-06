@@ -5,7 +5,6 @@ version: '3'
 dotenv: ['task.env']
 
 vars:
-  PACKAGE: "{{package}}"
 {% raw %}
   PID: 
     sh: "echo $(adb shell pidof {{.PACKAGE}})"
